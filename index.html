@@ -292,29 +292,6 @@
                 console.error(error);
                 document.getElementById("loading").style.display = "none";
                 document.getElementById("load_error").style.display = "flex";
-            },
-            function (statechange) {
-                switch (this.readyState) {
-                    case 0:
-                        document.getElementById("loading_state").innerHTML = "正在初始化中";
-                        break;
-                    case 1:
-                        document.getElementById("loading_state").innerHTML = "正在连接中";
-                        break;
-                    case 2:
-                        document.getElementById("loading_state").innerHTML = "正在加载中";
-                        break;
-                    case 3:
-                        document.getElementById("loading_state").innerHTML = "正在处理中";
-                        break;
-                    case 4:
-                        document.getElementById("loading_state").innerHTML = "加载完成";
-                        break;
-                }
-            },
-            function (progress) {
-                let percent = Math.floor(progress.loaded / progress.total * 100);
-                document.getElementById("loading_progress").innerHTML = "" + percent + "%";
             }
         )
     }

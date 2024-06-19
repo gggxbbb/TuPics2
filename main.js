@@ -21,11 +21,11 @@ class Pic {
     }
 }
 
+let database_buffer = null;
+
 /** Get all the data from the SQLite3 database
  * @param callback - The callback function to be called after getting the data, with the parameters sorts and pics
  * @param failureCallback
- * @param stateChangeCallback
- * @param progressCallback
  * @returns {void}
  */
 function getData(
@@ -33,9 +33,7 @@ function getData(
     },
     failureCallback = () => {
         console.error('Failed to load SQLite3 database');
-    },
-    stateChangeCallback = (e) => {},
-    progressCallback = (e) => {}
+    }
 ) {
     // noinspection JSUnusedGlobalSymbols
     initSqlJs(
@@ -52,21 +50,12 @@ function getData(
         ## ID(UUID), Title, SortID, Content, ThemeColor, TextColor, Path, Date, Username, Width, Height
         */
 
+        function load(buffer) {
 
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', 'https://tu-data.gxb.pub/tu.sqlite3', true);
-        xhr.responseType = 'arraybuffer';
-        xhr.onload = function (e) {
-
-            if (this.status !== 200) {
-                failureCallback();
-                return;
-            }
-
-            const uInt8Array = new Uint8Array(this.response);
+            document.getElementById("loading_state").innerHTML = "处理数据中";
 
             try {
-                const db = new SQL.Database(uInt8Array);
+                const db = new SQL.Database(buffer);
 
                 const sorts = [];
                 const pics = [];
@@ -84,9 +73,53 @@ function getData(
             } catch (err) {
                 failureCallback();
             }
+        }
+
+        if (database_buffer !== null) {
+            load(database_buffer);
+            return;
+        }
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'https://tu-data.gxb.pub/tu.sqlite3', true);
+        xhr.responseType = 'arraybuffer';
+        xhr.onloadend = function (e) {
+
+            if (this.status !== 200) {
+                failureCallback();
+                return;
+            }
+
+            const uInt8Array = new Uint8Array(this.response);
+
+            database_buffer = uInt8Array;
+
+            load(uInt8Array);
+
         };
-        xhr.onprogress = progressCallback;
-        xhr.onreadystatechange = stateChangeCallback;
+        xhr.onprogress = function (progress) {
+            let percent = Math.floor(progress.loaded / progress.total * 100);
+            document.getElementById("loading_progress").innerHTML = "" + percent + "%";
+        };
+        xhr.onreadystatechange = function (state) {
+            switch (this.readyState) {
+                case 0:
+                    document.getElementById("loading_state").innerHTML = "初始化中";
+                    break;
+                case 1:
+                    document.getElementById("loading_state").innerHTML = "准备连接中";
+                    break;
+                case 2:
+                    document.getElementById("loading_state").innerHTML = "正在连接中";
+                    break;
+                case 3:
+                    document.getElementById("loading_state").innerHTML = "正在加载中";
+                    break;
+                case 4:
+                    document.getElementById("loading_state").innerHTML = "加载完成";
+                    break;
+            }
+        }
         xhr.send();
     });
 }
