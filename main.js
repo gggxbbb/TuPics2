@@ -24,6 +24,7 @@ class Pic {
 class DataLoader {
 
     database_buffer = null;
+    database_loaded = false;
 
     /** Get all the data from the SQLite3 database
      * @param callback - The callback function to be called after getting the data, with the parameters sorts and pics
@@ -75,12 +76,15 @@ class DataLoader {
                     db.close();
 
                     callback(sorts, pics);
+
+                    pThis.database_loaded = true;
+                    pThis.database_buffer = buffer;
                 } catch (err) {
                     failureCallback();
                 }
             }
 
-            if (pThis.database_buffer !== null) {
+            if (pThis.database_buffer !== null && pThis.database_buffer !== undefined && pThis.database_buffer.length > 0 && pThis.database_loaded) {
                 load(pThis.database_buffer);
                 return;
             }
