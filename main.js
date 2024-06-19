@@ -21,105 +21,111 @@ class Pic {
     }
 }
 
-let database_buffer = null;
+class DataLoader {
 
-/** Get all the data from the SQLite3 database
- * @param callback - The callback function to be called after getting the data, with the parameters sorts and pics
- * @param failureCallback
- * @returns {void}
- */
-function getData(
-    callback = (sorts, pics) => {
-    },
-    failureCallback = () => {
-        console.error('Failed to load SQLite3 database');
-    }
-) {
-    // noinspection JSUnusedGlobalSymbols
-    initSqlJs(
-        {
-            locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}`
+    database_buffer = null;
+
+    /** Get all the data from the SQLite3 database
+     * @param callback - The callback function to be called after getting the data, with the parameters sorts and pics
+     * @param failureCallback
+     * @returns {void}
+     */
+    getData(
+        callback = (sorts, pics) => {
+        },
+        failureCallback = () => {
+            console.error('Failed to load SQLite3 database');
         }
-    ).then(function (SQL) {
-        /*
-        download SQLite3 from https://file.gxb.pub/d/local/tu/tu.sqlite3 then load it using sql.js
+    ) {
 
-        # Table Sort
-        ## ID(UUID), Name
-        # Table Pics
-        ## ID(UUID), Title, SortID, Content, ThemeColor, TextColor, Path, Date, Username, Width, Height
-        */
+        let pThis = this;
 
-        function load(buffer) {
-
-            document.getElementById("loading_state").innerHTML = "处理数据中";
-
-            try {
-                const db = new SQL.Database(buffer);
-
-                const sorts = [];
-                const pics = [];
-
-                db.each('SELECT * FROM Sort', function (row) {
-                    sorts.push(new Sort(row.ID, row.Name));
-                });
-                db.each('SELECT * FROM Pics', function (row) {
-                    pics.push(new Pic(row.ID, row.Title, row.SortID, row.Content, row.ThemeColor, row.TextColor, row.Path, row.Date, row.Username, row.Width, row.Height));
-                });
-
-                db.close();
-
-                callback(sorts, pics);
-            } catch (err) {
-                failureCallback();
+        // noinspection JSUnusedGlobalSymbols
+        initSqlJs(
+            {
+                locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}`
             }
-        }
+        ).then(function (SQL) {
+            /*
+            download SQLite3 from https://file.gxb.pub/d/local/tu/tu.sqlite3 then load it using sql.js
 
-        if (database_buffer !== null) {
-            load(database_buffer);
-            return;
-        }
+            # Table Sort
+            ## ID(UUID), Name
+            # Table Pics
+            ## ID(UUID), Title, SortID, Content, ThemeColor, TextColor, Path, Date, Username, Width, Height
+            */
 
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', 'https://tu-data.gxb.pub/tu.sqlite3', true);
-        xhr.responseType = 'arraybuffer';
-        xhr.onloadend = function (e) {
+            function load(buffer) {
 
-            if (this.status !== 200) {
-                failureCallback();
+                document.getElementById("loading_state").innerHTML = "处理数据中";
+
+                try {
+                    const db = new SQL.Database(buffer);
+
+                    const sorts = [];
+                    const pics = [];
+
+                    db.each('SELECT * FROM Sort', function (row) {
+                        sorts.push(new Sort(row.ID, row.Name));
+                    });
+                    db.each('SELECT * FROM Pics', function (row) {
+                        pics.push(new Pic(row.ID, row.Title, row.SortID, row.Content, row.ThemeColor, row.TextColor, row.Path, row.Date, row.Username, row.Width, row.Height));
+                    });
+
+                    db.close();
+
+                    callback(sorts, pics);
+                } catch (err) {
+                    failureCallback();
+                }
+            }
+
+            if (pThis.database_buffer !== null) {
+                load(pThis.database_buffer);
                 return;
             }
 
-            const uInt8Array = new Uint8Array(this.response);
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'https://tu-data.gxb.pub/tu.sqlite3', true);
+            xhr.responseType = 'arraybuffer';
+            xhr.onloadend = function (e) {
 
-            database_buffer = uInt8Array;
+                if (this.status !== 200) {
+                    failureCallback();
+                    return;
+                }
 
-            load(uInt8Array);
+                const uInt8Array = new Uint8Array(this.response);
 
-        };
-        xhr.onprogress = function (progress) {
-            let percent = Math.floor(progress.loaded / progress.total * 100);
-            document.getElementById("loading_progress").innerHTML = "" + percent + "%";
-        };
-        xhr.onreadystatechange = function (state) {
-            switch (this.readyState) {
-                case 0:
-                    document.getElementById("loading_state").innerHTML = "初始化中";
-                    break;
-                case 1:
-                    document.getElementById("loading_state").innerHTML = "准备连接中";
-                    break;
-                case 2:
-                    document.getElementById("loading_state").innerHTML = "正在连接中";
-                    break;
-                case 3:
-                    document.getElementById("loading_state").innerHTML = "正在加载中";
-                    break;
-                case 4:
-                    document.getElementById("loading_state").innerHTML = "加载完成";
-                    break;
+                pThis.database_buffer = uInt8Array;
+
+                load(uInt8Array);
+
+            };
+            xhr.onprogress = function (progress) {
+                let percent = Math.floor(progress.loaded / progress.total * 100);
+                document.getElementById("loading_progress").innerHTML = "" + percent + "%";
+            };
+            xhr.onreadystatechange = function (state) {
+                switch (this.readyState) {
+                    case 0:
+                        document.getElementById("loading_state").innerHTML = "初始化中";
+                        break;
+                    case 1:
+                        document.getElementById("loading_state").innerHTML = "准备连接中";
+                        break;
+                    case 2:
+                        document.getElementById("loading_state").innerHTML = "正在连接中";
+                        break;
+                    case 3:
+                        document.getElementById("loading_state").innerHTML = "正在加载中";
+                        break;
+                    case 4:
+                        document.getElementById("loading_state").innerHTML = "加载完成";
+                        break;
+                }
             }
-        }
-        xhr.send();
-    });
+            xhr.send();
+        });
+    }
 }

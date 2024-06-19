@@ -199,6 +199,8 @@
 
 <script>
 
+    const data = new DataLoader()
+
     function load(
         filter = ""
     ) {
@@ -210,7 +212,7 @@
         document.getElementById("sort_root").innerHTML = "";
         document.getElementById("extra_toolbar").innerHTML = "";
 
-        getData(
+        data.getData(
             function (sorts, pics) {
 
                 let float_bar = document.getElementById("extra_toolbar");
