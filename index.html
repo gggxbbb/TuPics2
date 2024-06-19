@@ -24,21 +24,6 @@
         }
     </style>
 
-    <style>
-        #sort_list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        #sort_list li {
-            display: inline;
-            margin: 5px;
-            cursor: pointer;
-        }
-
-    </style>
-
     <!--suppress CssUnusedSymbol -->
     <style>
         .img_div {
@@ -118,29 +103,40 @@
             max-width: 100%;
         }
     </style>
+
+    <style>
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+    </style>
 </head>
 
 <body>
 
-<script>
-
-</script>
+<div id="loading">
+    <h1>Loading...</h1>
+    <p>正在加载数据</p>
+    <p>请稍等</p>
+</div>
 
 <div id="root">
     <h1>TuArchive</h1>
-
-    <div id="sorts">
-        <h2>分类</h2>
-        <div>
-            <ul id="sort_list">
-            </ul>
-        </div>
-    </div>
+    <p>图鉴日图归档</p>
 
     <div id="pics">
-        <h2>图片</h2>
         <div id="sort_root">
-
         </div>
     </div>
 </div>
@@ -176,8 +172,10 @@
         filter = ""
     ) {
 
-        //clear sort_list and sort_root and extra_toolbar
-        document.getElementById("sort_list").innerHTML = "";
+        //show onloading
+        document.getElementById("loading").style.display = "flex";
+
+        //clear sort_root and extra_toolbar
         document.getElementById("sort_root").innerHTML = "";
         document.getElementById("extra_toolbar").innerHTML = "";
 
@@ -188,20 +186,9 @@
 
                 for (let i = 0; i < sorts.length; i++) {
                     let sort = sorts[i];
-                    let li = document.createElement("li");
-                    li.innerHTML = sort.name;
-                    li.onclick = function () {
-                        //goto target
-                        let target = document.getElementById("sort_" + sort.id);
-                        if (target) {
-                            target.scrollIntoView();
-                        }
-                    }
-                    document.getElementById("sort_list").appendChild(li);
-
                     let div = document.createElement("div");
 
-                    let label = document.createElement("h3");
+                    let label = document.createElement("h2");
                     label.innerHTML = sort.name;
                     div.appendChild(label);
 
@@ -261,6 +248,9 @@
                     if (sort_root) {
                         sort_root.appendChild(img_div);
                     }
+
+                    //hide onloading
+                    document.getElementById("loading").style.display = "none";
                 }
             }
         )
