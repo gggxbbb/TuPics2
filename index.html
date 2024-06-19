@@ -5,10 +5,8 @@
     <title>图鉴日图归档</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"
-        integrity="sha512-+6Q7hv5pGUBXOuHWw8OdQx3ac7DzM3oJhYqz7SHDku0yl9EBdMqegoPed4GsHRoNF/VQYK2LTYewAIEBrEf/3w=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://tu-data.gxb.pub/lib/sql-wasm.js"></script>
+    <script src="https://tu-data.gxb.pub/lib/marked.min.js"></script>
     <script src="/main.js"></script>
 
     <style type="text/css">
@@ -28,19 +26,27 @@
         .img_title {
             font-size: 25px;
             margin: 0;
+            width: 100%;
+            max-width: 100%;
         }
 
         .img_desc {
             margin: 10px 0;
+            width: 100%;
+            max-width: 100%;
         }
 
         .img_info {
             font-size: 15px;
             margin: 0;
+            width: 100%;
+            max-width: 100%;
         }
 
         .img {
             margin-top: 10px;
+            width: 100%;
+            max-width: 100%;
         }
 
     </style>
@@ -67,43 +73,91 @@
             background-color: #0056b3;
         }
     </style>
+
+    <style>
+        #filter-dialog {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .filter-guidance {
+            font-size: 10px;
+        }
+    </style>
 </head>
 
 <body>
 
-    <script>
+<script>
 
-    </script>
+</script>
 
-    <div id="root">
-        <h1>TuArchive</h1>
+<div id="root">
+    <h1>TuArchive</h1>
 
-        <div id="sorts">
-            <h2>分类</h2>
-            <div>
-                <ul id="sort_list">
-                </ul>
-            </div>
-        </div>
-
-        <div id="pics">
-            <h2>图片</h2>
-            <div id="sort_root">
-
-            </div>
+    <div id="sorts">
+        <h2>分类</h2>
+        <div>
+            <ul id="sort_list">
+            </ul>
         </div>
     </div>
 
-    <div id="float-toolbar">
+    <div id="pics">
+        <h2>图片</h2>
+        <div id="sort_root">
+
+        </div>
+    </div>
+</div>
+
+<div id="float-toolbar">
+    <div>
         <button onclick="window.scrollTo(0, 0)">↑Top</button>
+        <button onclick="showOrHideFilterDialog()">Filter</button>
     </div>
+    <div id="extra_toolbar">
+    </div>
+</div>
 
-    <script>
+<div id="filter-dialog">
+    <div>
+        <label for="filter">Filter:</label>
+        <input type="text" id="filter" name="filter">
+        <button onclick="load(document.getElementById('filter').value)">Apply</button>
+    </div>
+    <p class="filter-guidance">
+        默认对标题和内容进行模糊查找 <br/>
+        使用 @用户名 以根据用户名过滤, 支持模糊查找<br/>
+        使用 #日期 以根据日期过滤 <br/>
+        使用 = 作为前缀以使用正则表达式, 支持与 @, # 组合使用<br/>
+        使用 \@, \#, \= 以搜索@, #, = <br/>
+        关键词以空格分隔, 会被视为AND关系 <br/>
+    </p>
+</div>
+
+<script>
+
+    function load(
+        filter = ""
+    ) {
+
+        //clear sort_list and sort_root and extra_toolbar
+        document.getElementById("sort_list").innerHTML = "";
+        document.getElementById("sort_root").innerHTML = "";
+        document.getElementById("extra_toolbar").innerHTML = "";
 
         getData(
             function (sorts, pics) {
 
-                let float_bar = document.getElementById("float-toolbar");
+                let float_bar = document.getElementById("extra_toolbar");
 
                 for (let i = 0; i < sorts.length; i++) {
                     let sort = sorts[i];
@@ -140,6 +194,11 @@
                 }
                 for (let i = 0; i < pics.length; i++) {
                     let pic = pics[pics.length - i - 1];
+
+                    if (!filterPic(pic, filter)) {
+                        continue;
+                    }
+
                     let img_div = document.createElement("div");
                     img_div.className = "img_div";
                     img_div.id = "pic_" + pic.id;
@@ -160,28 +219,100 @@
                     img_div.appendChild(img_desc);
 
                     let img_info = document.createElement("p");
-                    img_info.innerHTML = pic.date + " @" + pic.username + " ," + pic.width + "x" + pic.height;
+                    img_info.innerHTML = pic.date + " @" + pic.username + " |" + pic.width + "x" + pic.height;
                     img_info.className = "img_info";
                     img_div.appendChild(img_info);
 
                     let img = document.createElement("img");
                     img.className = "img";
                     img.loading = "lazy";
-                    img.src = "https://tu-data.gxb.pub/pictures"+pic.path;
+                    img.src = "https://tu-data.gxb.pub/pictures" + pic.path;
                     img_div.appendChild(img);
 
                     //get sort_root
                     let sort_root = document.getElementById("sort_" + pic.sortId);
                     if (sort_root) {
                         sort_root.appendChild(img_div);
-                        img.width = sort_root.clientWidth - 50;
-                        //using pic.width and pic.height to calculate the height
-                        img.height = pic.height * img.width / pic.width;
                     }
                 }
             }
         )
+    }
 
-    </script>
+    window.onload = function () {
+        load();
+    }
+
+</script>
+
+<script>
+
+    function showFilterDialog() {
+        document.getElementById("filter-dialog").style.display = "block";
+    }
+
+    function hideFilterDialog() {
+        document.getElementById("filter-dialog").style.display = "none";
+    }
+
+    function showOrHideFilterDialog() {
+        let dialog = document.getElementById("filter-dialog");
+        if (dialog.style.display === "block") {
+            hideFilterDialog();
+        } else {
+            showFilterDialog();
+        }
+    }
+
+    function filterPic(pic, filter) {
+        if (filter === null || filter === "") {
+            return true;
+        }
+        let filters = filter.split(" ");
+
+        let re = true
+
+        for (let i = 0; i < filters.length; i++) {
+            filter = filters[i];
+
+            if (filter.startsWith("@")) {
+                if (pic.username.indexOf(filter.substring(1)) === -1) {
+                    re = re && false;
+                }
+            } else if (filter.startsWith("#")) {
+                if (pic.date.indexOf(filter.substring(1)) === -1) {
+                    re = re && false;
+                }
+            } else if (filter.startsWith("=")) {
+                if (filter.startsWith("=@")) {
+                    let reg = new RegExp(filter.substring(2));
+                    if (!reg.test(pic.username)) {
+                        re = re && false;
+                    }
+                } else if (filter.startsWith("=#")) {
+                    let reg = new RegExp(filter.substring(2));
+                    if (!reg.test(pic.date)) {
+                        re = re && false;
+                    }
+                } else {
+                    let reg = new RegExp(filter.substring(1));
+                    if (!reg.test(pic.title) && !reg.test(pic.content)) {
+                        re = re && false;
+                    }
+                }
+            } else if (filter.startsWith("\\@") || filter.startsWith("\\#") || filter.startsWith("\\=")) {
+                if (pic.title.indexOf(filter.substring(1)) === -1 && pic.content.indexOf(filter.substring(1)) === -1) {
+                    re = re && false;
+                }
+            } else {
+                if (pic.title.indexOf(filter) === -1 && pic.content.indexOf(filter) === -1) {
+                    re = re && false;
+                }
+            }
+        }
+        return re;
+    }
+
+</script>
 
 </body>
