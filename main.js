@@ -24,6 +24,7 @@ class Pic {
 /** Get all the data from the SQLite3 database
  * @param callback - The callback function to be called after getting the data, with the parameters sorts and pics
  * @param failureCallback
+ * @param stateChangeCallback
  * @param progressCallback
  * @returns {void}
  */
@@ -33,6 +34,7 @@ function getData(
     failureCallback = () => {
         console.error('Failed to load SQLite3 database');
     },
+    stateChangeCallback = (e) => {},
     progressCallback = (e) => {}
 ) {
     // noinspection JSUnusedGlobalSymbols
@@ -84,6 +86,7 @@ function getData(
             }
         };
         xhr.onprogress = progressCallback;
+        xhr.onreadystatechange = stateChangeCallback;
         xhr.send();
     });
 }
