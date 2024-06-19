@@ -151,8 +151,8 @@
 
 <div id="loading">
     <h1>Loading...</h1>
-    <p>正在加载数据</p>
-    <p>请稍等</p>
+    <p id="loading_state">正在从服务器获取数据</p>
+    <p id="loading_progress">请稍等</p>
 </div>
 
 <div id="load_error">
@@ -278,6 +278,10 @@
                     let sort_root = document.getElementById("sort_" + pic.sortId);
                     if (sort_root) {
                         sort_root.appendChild(img_div);
+                        //set img width
+                        img.style.width = img_div.offsetWidth - 30 + "px";
+                        //set img height
+                        img.style.height = img_div.offsetWidth / pic.width * pic.height + "px";
                     }
 
                     //hide onloading
@@ -288,12 +292,34 @@
                 console.error(error);
                 document.getElementById("loading").style.display = "none";
                 document.getElementById("load_error").style.display = "flex";
+            },
+            function (progress) {
+                let percent = Math.floor(progress.loaded / progress.total * 100);
+                document.getElementById("loading_progress").innerHTML = "" + percent + "%";
             }
         )
     }
 
+    function resize() {
+        let imgs = document.getElementsByClassName("img");
+        for (let i = 0; i < imgs.length; i++) {
+            let img = imgs[i];
+            let img_div = img.parentElement;
+            const origin_width = img.width;
+            const origin_height = img.height;
+            const div_width = img_div.offsetWidth - 30;
+            const div_height = div_width / origin_width * origin_height;
+            img.style.width = div_width + "px";
+            img.style.height = div_height + "px";
+        }
+    }
+
     window.onload = function () {
         load();
+    }
+
+    window.onresize = function () {
+        resize();
     }
 
 </script>

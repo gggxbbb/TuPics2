@@ -24,15 +24,16 @@ class Pic {
 /** Get all the data from the SQLite3 database
  * @param callback - The callback function to be called after getting the data, with the parameters sorts and pics
  * @param failureCallback
+ * @param progressCallback
  * @returns {void}
  */
 function getData(
     callback = (sorts, pics) => {
-
     },
     failureCallback = () => {
         console.error('Failed to load SQLite3 database');
-    }
+    },
+    progressCallback = (e) => {}
 ) {
     // noinspection JSUnusedGlobalSymbols
     initSqlJs(
@@ -48,6 +49,8 @@ function getData(
         # Table Pics
         ## ID(UUID), Title, SortID, Content, ThemeColor, TextColor, Path, Date, Username, Width, Height
         */
+
+
         const xhr = new XMLHttpRequest();
         xhr.open('GET', 'https://tu-data.gxb.pub/tu.sqlite3', true);
         xhr.responseType = 'arraybuffer';
@@ -80,6 +83,7 @@ function getData(
                 failureCallback();
             }
         };
+        xhr.onprogress = progressCallback;
         xhr.send();
     });
 }
