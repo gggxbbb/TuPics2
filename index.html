@@ -305,8 +305,8 @@
         for (let i = 0; i < imgs.length; i++) {
             let img = imgs[i];
             let img_div = img.parentElement;
-            const origin_width = img.width;
-            const origin_height = img.height;
+            const origin_width = img.style.width;
+            const origin_height = img.style.height;
             const div_width = img_div.offsetWidth - 30;
             const div_height = div_width / origin_width * origin_height;
             img.style.width = div_width + "px";
