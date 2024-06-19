@@ -43,7 +43,7 @@ function getData(
         ## ID(UUID), Title, SortID, Content, ThemeColor, TextColor, Path, Date, Username, Width, Height
         */
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', 'https://file.gxb.pub/d/local/tu/tu.sqlite3', true);
+        xhr.open('GET', 'https://tu-data.gxb.pub/tu.sqlite3', true);
         xhr.responseType = 'arraybuffer';
         xhr.onload = function (e) {
             const uInt8Array = new Uint8Array(this.response);
