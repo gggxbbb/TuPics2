@@ -120,6 +120,30 @@
             z-index: 1000;
         }
 
+        #load_error {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #load_error button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 
@@ -129,6 +153,13 @@
     <h1>Loading...</h1>
     <p>正在加载数据</p>
     <p>请稍等</p>
+</div>
+
+<div id="load_error">
+    <h1>Error</h1>
+    <p>加载数据失败</p>
+    <p>请刷新重试</p>
+    <button onclick="window.location.reload()">刷新</button>
 </div>
 
 <div id="root">
@@ -252,6 +283,11 @@
                     //hide onloading
                     document.getElementById("loading").style.display = "none";
                 }
+            },
+            function (error) {
+                console.error(error);
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("load_error").style.display = "flex";
             }
         )
     }

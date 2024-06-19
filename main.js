@@ -22,11 +22,17 @@ class Pic {
 }
 
 /** Get all the data from the SQLite3 database
- * @param {function} callback - The callback function to be called after getting the data, with the parameters sorts and pics
+ * @param callback - The callback function to be called after getting the data, with the parameters sorts and pics
+ * @param failureCallback
  * @returns {void}
  */
 function getData(
-    callback,
+    callback = (sorts, pics) => {
+
+    },
+    failureCallback = () => {
+        console.error('Failed to load SQLite3 database');
+    }
 ) {
     // noinspection JSUnusedGlobalSymbols
     initSqlJs(
@@ -46,22 +52,33 @@ function getData(
         xhr.open('GET', 'https://tu-data.gxb.pub/tu.sqlite3', true);
         xhr.responseType = 'arraybuffer';
         xhr.onload = function (e) {
+
+            if (this.status !== 200) {
+                failureCallback();
+                return;
+            }
+
             const uInt8Array = new Uint8Array(this.response);
-            const db = new SQL.Database(uInt8Array);
 
-            const sorts = [];
-            const pics = [];
+            try {
+                const db = new SQL.Database(uInt8Array);
 
-            db.each('SELECT * FROM Sort', function (row) {
-                sorts.push(new Sort(row.ID, row.Name));
-            });
-            db.each('SELECT * FROM Pics', function (row) {
-                pics.push(new Pic(row.ID, row.Title, row.SortID, row.Content, row.ThemeColor, row.TextColor, row.Path, row.Date, row.Username, row.Width, row.Height));
-            });
+                const sorts = [];
+                const pics = [];
 
-            db.close();
+                db.each('SELECT * FROM Sort', function (row) {
+                    sorts.push(new Sort(row.ID, row.Name));
+                });
+                db.each('SELECT * FROM Pics', function (row) {
+                    pics.push(new Pic(row.ID, row.Title, row.SortID, row.Content, row.ThemeColor, row.TextColor, row.Path, row.Date, row.Username, row.Width, row.Height));
+                });
 
-            callback(sorts, pics);
+                db.close();
+
+                callback(sorts, pics);
+            } catch (err) {
+                failureCallback();
+            }
         };
         xhr.send();
     });
