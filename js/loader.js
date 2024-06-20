@@ -21,6 +21,12 @@ class Pic {
     }
 }
 
+/** Load data from SQLite3 database
+ * @class DataLoader
+ * @property {Uint8Array} database_buffer - The buffer of the database
+ * @property {boolean} database_loaded - Whether the database has been loaded
+ * @method getData - Get all the data from the SQLite3 database
+ */
 class DataLoader {
 
     database_buffer = null;
@@ -44,7 +50,7 @@ class DataLoader {
         // noinspection JSUnusedGlobalSymbols
         initSqlJs(
             {
-                locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}`
+                locateFile: file => `https://tu-data.gxb.pub/lib/${file}`
             }
         ).then(function (SQL) {
             /*
@@ -80,7 +86,7 @@ class DataLoader {
                     pThis.database_loaded = true;
                     pThis.database_buffer = buffer;
                 } catch (err) {
-                    failureCallback();
+                    failureCallback(err);
                 }
             }
 
@@ -95,7 +101,7 @@ class DataLoader {
             xhr.onloadend = function (e) {
 
                 if (this.status !== 200) {
-                    failureCallback();
+                    failureCallback("Unexpected status code: " + this.status );
                     return;
                 }
 
