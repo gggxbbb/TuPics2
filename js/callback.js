@@ -52,13 +52,15 @@ function getData_callback(filter) {
             img_div.appendChild(img_desc);
 
             let img_info = document.createElement("p");
-            img_info.innerHTML = pic.date + " @" + pic.username + " |" + pic.width + "x" + pic.height;
+            img_info.innerHTML = pic.date + " @" + pic.username + " | " + pic.width + "x" + pic.height;
             img_info.className = "img_info";
             img_div.appendChild(img_info);
 
             let img = document.createElement("img");
             img.className = "img";
             img.loading = "lazy";
+            img.alt = pic.title;
+
             img.src = "https://tu-data.gxb.pub/pictures" + pic.path;
             img_div.appendChild(img);
 
